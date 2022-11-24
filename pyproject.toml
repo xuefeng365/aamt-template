@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aamt"
-version = "0.0.3"
+version = "0.0.4"
 description = "基于pytest的接口自动化测试工具模板"
 authors = ["xuefeng365 <120158568@qq.com>"]
 readme = "README.md"
@@ -28,7 +28,7 @@ default = true
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 
 [tool.poetry.scripts]
-aat = "aamt.cli:main"
+aamt = "aamt.cli:main"
 
 [tool.poetry.plugins."pytest11"]
 "aamt" = "aamt.plugin:Plugin"
