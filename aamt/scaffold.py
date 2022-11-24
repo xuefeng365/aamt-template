@@ -97,7 +97,7 @@ def create_scaffold(project_name):
     create_folder(os.path.join(project_name, "report"))
 
     create_folder(os.path.join(project_name, "resources"))
-    create_file(os.path.join(project_name, "common", "aamt.ini"),file_content=taa_content)
+    create_file(os.path.join(project_name, "common", "aamt.ini"),file_content=aamt_content)
     create_folder(os.path.join(project_name, "resources", "env_vars"))
     create_file(os.path.join(project_name, "resources", "env_vars", "env_vars_test.yaml"),file_content=env_vars_test_yaml_content)
     create_file(os.path.join(project_name, "resources", "env_vars", "env_vars_uat.yaml"),file_content=env_vars_uat_yaml_content)
