@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "aamt"
+version = "0.0.3"
+description = "基于pytest的接口自动化测试工具模板"
+authors = ["xuefeng365 <120158568@qq.com>"]
+readme = "README.md"
+license = "MIT"
+homepage = "https://github.com/xuefeng365/aamt-template.git"
+repository = "https://github.com/xuefeng365/aamt-template.git"
+packages = [{include = "aamt"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pyyaml = "^6.0"
+sqlalchemy = "^1.4.44"
+texttable = "^1.6.7"
+jmespath = "^1.0.1"
+faker = "^15.3.3"
+colorlog = "^6.7.0"
+allure-pytest = "^2.12.0"
+pytest = "^7.2.0"
+
+[tool.poetry.dev-dependencies]
+
+[[tool.poetry.source]]
+name = "tsinghua"
+default = true
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+
+[tool.poetry.scripts]
+aat = "aamt.cli:main"
+
+[tool.poetry.plugins."pytest11"]
+"aamt" = "aamt.plugin:Plugin"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
