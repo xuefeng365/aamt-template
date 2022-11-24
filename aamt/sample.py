@@ -90,7 +90,7 @@ class HttpClient(Body_type):
                 headers['Content-Type'] = 'application/json; charset=UTF-8'
                 result = self.session.request(url=url, method=method, json=body, headers=headers,timeout=timeout,**kwargs)
             elif body_type == Body_type.form_file:
-                filename = file_path.split('\\')[-1]  # xiaoxin.png
+                filename = file_path.split('\\\\')[-1]  # xiaoxin.png
                 # 通过 mimetypes 来自动识别文件类型 ： https://cloud.tencent.com/developer/section/1369143
                 fileType = MimeTypes().guess_type(file_path)[0]
                 # 没有识别到就不传 content_type
@@ -144,11 +144,11 @@ class HttpClient(Body_type):
         result = AamtResponse(result)
 
         try:
-            self.logging.info(f'\n请求日志：\nurl: {url}\nmethod: {method}\nbody: \n{body}\nbody_type: {body_type}\nheaders: \n{headers}\n**********************************************************************************')
-            self.logging.debug(f'\n响应日志：\n响应码: {result.status_code}\n请求>响应 时间开销: {time_}\n**********************************************************************************\n')
+            self.logging.info(f'\\n请求日志：\\nurl: {url}\\nmethod: {method}\\nbody: \\n{body}\\nbody_type: {body_type}\\nheaders: \\n{headers}\\n**********************************************************************************')
+            self.logging.debug(f'\\n响应日志：\\n响应码: {result.status_code}\\n请求>响应 时间开销: {time_}\\n**********************************************************************************\\n')
         except AttributeError:
             self.logging.error(
-                f'\n无法获取响应码， 响应日志：\n{result}\n请求>响应 时间开销: {time_}\n**********************************************************************************\n')
+                f'\\n无法获取响应码， 响应日志：\\n{result}\\n请求>响应 时间开销: {time_}\\n**********************************************************************************\\n')
         except TypeError:
             self.logging.warning(f'警告：{kwargs}')
 
@@ -158,7 +158,7 @@ class HttpClient(Body_type):
             return result.json()
         except:
             self.__create_response_log(result.status_code, result.text,time_)
-            self.logging.warning(f'\n注意 响应内容：不可以序列化，具体响应如下：\n{result.text}')
+            self.logging.warning(f'\\n注意 响应内容：不可以序列化，具体响应如下：\\n{result.text}')
             return result.text
 
     def get_full_url(self, url, etc={}, replace={}, h=""):
@@ -425,7 +425,7 @@ def env_vars_data():
     return result
 
 
-# --------------- 怡和 超级管理员管理后台 登录及其数据初始化 开始 -----------
+# --------------- 超级管理员管理后台 登录及其数据初始化 开始 -----------
 @pytest.fixture(scope="session")
 # def systerm_admin_login(user_info=env_vars_data['systerm']):
 def systerm_admin_login(env_vars_data):
@@ -441,78 +441,13 @@ def init_admin(systerm_admin_login):
     pub_d = Public(token='systerm_admin_token')
     print('-+-+-+', env_vars_data['systerm'])
 
-    # 医生基础数据
-    warehouse_names = [f"{env_vars_data['systerm']['account']}仓库1", f"{env_vars_data['systerm']['account']}仓库2"]
-    warehouse_types = ['自有仓库', '店铺自有']
-    shelve_type1 = '入库区'
-    shelve_type2 = '出库区'
-    shelve_type3 = '普通区'
-
-    for warehouse_name in warehouse_names:
-        for warehouse_type in warehouse_types:
-            pub_d.add_warehouse(name=warehouse_name, type=warehouse_type)
-
-            pub_d.add_shelves(warehouse_name=warehouse_name, name=f'{warehouse_name}_{shelve_type1}', type=shelve_type1)
-            pub_d.add_shelves(warehouse_name=warehouse_name, name=f'{warehouse_name}_{shelve_type2}', type=shelve_type2)
-            pub_d.add_shelves(warehouse_name=warehouse_name, name=f'{warehouse_name}_{shelve_type3}', type=shelve_type3)
-
-    # 新增分类-已默认3个分类
-    pub_d.add_classification()
-
-    brand_name = 'auto品牌1'
-    commodity_upcs = [('111111229980', '主产品'), ('222222447863', '主产品'), ('888888861827', '非升级配件'),
-                      ('999999435729', '升级配件')]
-
-    # 新增品牌
-    pub_d.add_brand(name=brand_name)
-    # 新增upc
-    for commodity_upc in commodity_upcs:
-        pub_d.add_commodity(brand_name=brand_name, upcCode=commodity_upc[0], name='auto', types_name=commodity_upc[1])
-
-    template_role = ['auto_template', 'auto_role']
-    companys = [
-        ('怡和（不删）', ['521']),
-        ('xuefeng', ['5200', '5201']),
-        ('xuefeng2', ['5300', '5400'])
-    ]
-
-    # -------- 怡和 账号，新增公司、新增模板（分配全部权限）、新增角色（分配权限） 、新增用户（分配角色） ----------
-    for company in companys:
-        pub_d.add_company(name=company[0])
-
-    # 新增模板，给模板分配全部权限
-    resourceList = get_authority_id()
-    pub_d.company_template_assign_permissions(name=template_role[0], resourceList=resourceList)
-
-    # 公司分配模板
-    for company in companys:
-        if company != '怡和（不删）':
-            pub_d.assign_templates_to_companies(company_name=company[0], template_name=template_role[0])
-        else:
-            print('怡和主体 请自行分配模板，脚本跳过')
-
-    # 每个公司下 新建角色 并 给角色分配权限
-    for company in companys:
-        pub_d.add_role(company_name=company[0], role_name=template_role[1], cid=222260, resourses=resourceList)
-    # 每个公司下 新建用户 并 给用户分配权限
-    for company in companys:
-        for account in company[1]:
-            pub_d.add_user(company_name=company[0], account=account, password=account, firstName='脚本', lastName='新增',
-                           role_name=template_role[1])
 
     # -------- 新增公司、新增模板（分配全部权限）、新增角色（分配权限） 、新增用户（分配角色） ----------
-
-    # # 给521分配仓库权限
-    # pub_d.assign_warehouse_permissions_to_users(account='521', warehouse_name='auto仓库')
-
-    # # ------------ 线下采购基础数据 -----------
-    # # 新增下线采购供应商 和 银行卡信息
-    # pub_d.add_Offline_purchasing_suppliers(suppliers='xuefeng线下采购')
 
     yield pub_d
 
 
-# --------------- 怡和 超级管理员管理后台 登录及其数据初始化 结束 -----------
+# --------------- 超级管理员管理后台 登录及其数据初始化 结束 -----------
 
 
 # --------------- xuefeng 医生1 登录及其数据初始化 开始 -----------
@@ -529,41 +464,6 @@ def init_doctor1(login_doctor1):
     print('调用公共方法 新建基础数据（不需要返回值）')
     pub_d = Public(token='xuefeng_doctor1_token')
     # 医生基础数据
-
-    warehouse_names = ['xuefeng_doctor1仓库1', 'xuefeng_doctor1仓库2']
-    warehouse_types = ['自有仓库', '店铺自有']
-    shelve_type1 = '入库区'
-    shelve_type2 = '出库区'
-    shelve_type3 = '普通区'
-
-    for warehouse_name in warehouse_names:
-        for warehouse_type in warehouse_types:
-            pub_d.add_warehouse(name=warehouse_name, type=warehouse_type)
-
-            pub_d.add_shelves(warehouse_name=warehouse_name, name=f'{warehouse_name}_{shelve_type1}', type=shelve_type1)
-            pub_d.add_shelves(warehouse_name=warehouse_name, name=f'{warehouse_name}_{shelve_type2}', type=shelve_type2)
-            pub_d.add_shelves(warehouse_name=warehouse_name, name=f'{warehouse_name}_{shelve_type3}', type=shelve_type3)
-
-    brand_name = 'auto品牌1'
-    commodity_upcs = [('111111229980', '主产品'), ('222222447863', '主产品'), ('888888861827', '非升级配件'),
-                      ('999999435729', '升级配件')]
-
-    skus = [('auto1_sku_00001', '全新', '111111229980'), ('auto1_sku_00002', '全新', '111111229980'),
-            ('auto1_sku_00003', '全新', '111111229980'),
-            ('auto2_sku_00001', '全新', '222222447863'), ('auto2_sku_00002', '全新', '222222447863'),
-            ('auto2_sku_00003', '全新', '222222447863'),
-            ('auto_sku_peijian_00001', '全新', '888888861827'),
-            ('auto_sku_peijian_shengji_00001', '全新', '999999435729')]
-
-    for commodity_upc in commodity_upcs:
-        pub_d.add_commodity(brand_name=brand_name, upcCode=commodity_upc[0], name='auto', types_name=commodity_upc[1])
-
-    for sku in skus:
-        pub_d.add_sku(skuCode=sku[0], newOld=sku[1], upcCode=sku[2], manager='52005200')
-
-    # # ------------ 线下采购基础数据 -----------
-    # # 新增下线采购供应商 和 银行卡信息
-    # pub_d.add_Offline_purchasing_suppliers(suppliers='xuefeng线下采购')
 
     yield pub_d
 
@@ -607,22 +507,7 @@ def init_nurse1(login_nurse1):
     pub_n = Public(token='xuefeng2_nurse1_token')
 
     # # 护士基础数据
-    # pub_n.add_warehouse(name='auto护士仓库', type='护士仓库')
-    #
-    # pub_n.add_shelves(warehouse_name='auto护士仓库',name='auto护士入库区1', type='入库区')
-    # pub_n.add_shelves(warehouse_name='auto护士仓库',name='auto护士出库区1', type='出库区')
-    # pub_n.add_shelves(warehouse_name='auto护士仓库',name='auto护士破损区1', type='破损区')
-    #
-    # # 给5201分配仓库权限
-    # pub_n.assign_warehouse_permissions_to_users(account='5201', warehouse_name='auto护士仓库')
-    #
-    #
-    # # 期货护士绑定采购商
-    # pub_n.bind_buyers(codeOrName=pub_n.get_company_cid(company_name='怡和（不删）'))
-    # # 期货护士添加支付方式--如果有自动化新增的支付方式，就跳过
-    # pub_n.nurse_add_payment_method()
-    # # 现货--个人中心新增一个地址
-    # pub_n.center_self_add_address()
+
 
     yield pub_n
 
@@ -834,7 +719,7 @@ class Read_yaml(Operate_config):
         filepath="/brand/brand_controller.yaml"
         '''
         # 测试用例数据
-        test_data_path = f"{Config.project_root_dir}/data/{filepath}".replace("\\", "/").replace("//", "/")
+        test_data_path = f"{Config.project_root_dir}/data/{filepath}".replace("\\\\", "/").replace("//", "/")
 
         with open(test_data_path, encoding="utf-8") as f:
             return yaml.load(f.read(), Loader=yaml.FullLoader)
@@ -845,7 +730,7 @@ def get_file_path(file_name, middle='file'):
     file_name: 文件名，比如 xiaoxin.png
     '''
 
-    filePath = f"{Config.project_root_dir}/{middle}/{file_name}".replace("\\", "/").replace("//", "/")
+    filePath = f"{Config.project_root_dir}/{middle}/{file_name}".replace("\\\\", "/").replace("//", "/")
     return filePath
 
 
@@ -982,7 +867,7 @@ import hashlib
 
 import jmespath
 
-from api.client import HttpClient
+from until.client import HttpClient
 from common.config import *
 
 
@@ -1010,8 +895,8 @@ class Login(HttpClient):
         }
         url = '/internet/user/login'
         method = 'post'
-        url = super().get_full_url(url, h=self.env_vars_data['front_host'])
-        return super().send(url=url, method=method, body=body, body_type=self.json)
+        url = self.get_full_url(url, h=self.env_vars_data['front_host'])
+        return self.send(url=url, method=method, body=body, body_type=self.json)
 
 
 # **********************************
@@ -1040,7 +925,7 @@ class Login_after(HttpClient):
         self.password = new_mima
 
         result = self.login_after(username=self.username, password=self.password)
-        assert jmespath.search('code', result) == 200, f"系统管理登录失败,接口响应 \n {result}\n"
+        assert jmespath.search('code', result) == 200, f"系统管理登录失败,接口响应 \\n {result}\\n"
         self.token = result['result']['token']
         print(f'======自动运行：先获取 后台token========: {self.token}')
         # 把token值写入配置文件中
@@ -1053,10 +938,12 @@ class Login_after(HttpClient):
         }
         url = '/system/userInfo/login'
         method = 'get'
-        url = super().get_full_url(url, etc=etc, h=self.env_vars_data['after_host'])
-        return super().send(url=url, method=method)
+        url = self.get_full_url(url, etc=etc, h=self.env_vars_data['after_host'])
+        return self.send(url=url, method=method)
 
 # ***********************************
+
+
 
 """
 mysqlhelper_content = """
@@ -1170,6 +1057,246 @@ if __name__ == '__main__':
     print('查询多条数据是：', mysql.get_all(sql2))
     mysql.close()
 
+"""
+emailhelper_content = """
+# -*- coding: utf-8 -*-
+
+# @Software: PyCharm
+# @File: emailhelper.py
+# @Author: xuefeng365
+# @E-mail: 120158568@qq.com,
+# @Site: 
+# @Time: 11月 24, 2022
+
+import smtplib  # 加载smtplib模块
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+from email.utils import formataddr
+from email.mime.application import MIMEApplication
+import time
+from datetime import datetime
+
+
+class EmailHelper(object):
+
+    def __init__(self, title, content, sys_sender, sys_pwd, receiver):
+        '''
+        :param title:
+        :param content: 邮件信息
+        :param sys_sender: 发件人邮箱
+        :param sys_pwd: 发件人邮箱密码
+        :param receiver: 收件人邮箱
+        '''
+        self.title = title  # 标题
+        self.receiver = receiver  #（收件人）要发送的邮箱地址
+        self.content = content  # 发送内容
+        self.sys_sender = sys_sender  # 系统账户
+        self.sys_pwd = sys_pwd  # 系统账户密码
+
+    def send_office365(self, file_list=None):
+        '''
+        发送邮件
+        :param file_list: 附件文件列表
+        :return: bool
+        '''
+        try:
+            # 创建一个带附件的实例
+            msg = MIMEMultipart()
+            # 发件人格式
+            msg['From'] = formataddr(("xuefeng365", self.sys_sender))
+            # 收件人格式 (server.sendmail 里传参时的收件人是list，msg['to'] 接收的变量值是字符串－－－即在邮件里显示的收信人信息。)
+            msg['To'] = self.receiver
+            # 邮件主题
+            msg['Subject'] = self.title
+
+            # 正文
+            self.content = '''
+                                           <H2>您好!</H2>
+                                           <p>{}</p>
+                                           '''.format(self.content)
+
+            data_now = datetime.now().strftime('%Y%m%d')
+            # 邮件正文内容
+            msg.attach(MIMEText(self.content + data_now, 'html', 'utf-8'))
+
+            # ----------  上传附件模块------------
+            # 附件列表 附件是和python文件在同一目录，请根据实际情况，修改附件的路径。
+            if file_list is None:
+                file_list = []
+            # 多个附件
+            for file_name in file_list:
+                print("file_name",file_name)
+                # 构造附件
+                xlsxpart = MIMEApplication(open(file_name, 'rb').read())
+                # filename表示邮件中显示的附件名
+                xlsxpart.add_header('Content-Disposition','attachment',filename = '%s'%file_name)
+                msg.attach(xlsxpart)
+            # ----------  上传附件模块------------
+
+
+            # SMTP服务器
+            server = smtplib.SMTP("smtp.office365.com", 587,timeout=10)
+
+            # 注意：附件是和python文件在同一目录，请根据实际情况，修改附件的路径。
+            # 阿里云服务器，从即日起，不再提供25端口邮件服务 。必须使用SSL加密465端口发信！
+            # 所以上面的代码中，改成了SMTP_SSL，并使用了465端口。
+            # server = smtplib.SMTP_SSL("smtp.163.com", 465, timeout=10)
+
+            server.ehlo()  # 向邮箱发送SMTP 'ehlo' 命令
+            server.starttls()
+
+            # 登录账户
+            server.login(self.sys_sender, self.sys_pwd)
+            # 发送邮件 （多个收件人容易出错， 核心问题在于server.sendmail 中的 多个收件人必须是list["邮箱A","邮箱B","邮箱C"] ）
+            server.sendmail(self.sys_sender, self.receiver.split(','), msg.as_string())
+
+            # 退出账户
+            server.quit()
+            print('邮件发送成功')
+            return True
+        except Exception as e:
+            print('邮件发送失败 : ', e)
+            return False
+
+    def send_qq(self,file_list=None):
+        '''
+                发送邮件
+                :param file_list: 附件文件列表
+                :return: bool
+                '''
+        try:
+            # 创建一个带附件的实例
+            msg = MIMEMultipart()
+            # 发件人格式
+            msg['From'] = formataddr(("苏雪峰", self.sys_sender))
+            # 收件人格式
+            msg['To'] = self.receiver
+            # 邮件主题
+            msg['Subject'] = self.title
+
+            # 正文
+            self.content = '''
+                                           <H2>您好!</H2>
+                                           <p>{}</p>
+                                           '''.format(self.content)
+
+            data_now = datetime.now().strftime('%Y%m%d')
+            # 邮件正文内容
+            msg.attach(MIMEText(self.content + data_now, 'html', 'utf-8'))
+
+            # ----------  上传附件模块------------
+            # 附件列表 附件是和python文件在同一目录，请根据实际情况，修改附件的路径。
+            if file_list is None:
+                file_list = []
+            # 多个附件
+            for file_name in file_list:
+                print("file_name",file_name)
+                # 构造附件
+                xlsxpart = MIMEApplication(open(file_name, 'rb').read())
+                # filename表示邮件中显示的附件名
+                xlsxpart.add_header('Content-Disposition','attachment',filename = '%s'%file_name)
+                msg.attach(xlsxpart)
+            # ----------  上传附件模块------------
+
+
+            # SMTP服务器
+            server = smtplib.SMTP_SSL("smtp.qq.com", 465, timeout=10)
+
+            server.ehlo()  # 向邮箱发送SMTP 'ehlo' 命令
+
+            # 登录账户
+            server.login(self.sys_sender, self.sys_pwd)
+            # 发送邮件 （多个收件人容易出错， 核心问题在于server.sendmail 中的 多个收件人必须是list["邮箱A","邮箱B","邮箱C"] ）
+            server.sendmail(self.sys_sender, self.receiver.split(','), msg.as_string())
+
+            # 退出账户
+            server.quit()
+            print('邮件发送成功')
+            return True
+        except Exception as e:
+            print('邮件发送失败 : ', e)
+            return False
+
+    def send_163(self,file_list=None):
+        '''
+                发送邮件
+                :param file_list: 附件文件列表
+                :return: bool
+                '''
+
+        try:
+            # 创建一个带附件的实例
+            msg = MIMEMultipart()
+            # 发件人格式
+            msg['From'] = formataddr(("苏雪峰", self.sys_sender))
+            # 收件人格式
+            msg['To'] = self.receiver
+            # 邮件主题
+            msg['Subject'] = self.title
+
+            # 正文
+            self.content = '''
+                                           <H2>您好!</H2>
+                                           <p>{}</p>
+                                           '''.format(self.content)
+
+            # 邮件正文内容
+            msg.attach(MIMEText(self.content, 'html', 'utf-8'))
+
+            # ----------  上传附件模块------------
+            # 附件列表 附件是和python文件在同一目录，请根据实际情况，修改附件的路径。
+            if file_list is None:
+                file_list = []
+            # 多个附件
+            for file_name in file_list:
+                print("file_name",file_name)
+                # 构造附件
+                xlsxpart = MIMEApplication(open(file_name, 'rb').read())
+                # filename表示邮件中显示的附件名
+                xlsxpart.add_header('Content-Disposition','attachment',filename = '%s'%file_name)
+                msg.attach(xlsxpart)
+            # ----------  上传附件模块------------
+
+            # SMTP服务器
+            server = smtplib.SMTP_SSL("smtp.163.com", 465, timeout=10)
+            # 阿里云服务器，从即日起，不再提供25端口邮件服务 。必须使用SSL加密465端口发信！
+            # 所以上面的代码中，改成了SMTP_SSL，并使用了465端口。
+            # server = smtplib.SMTP_SSL("smtp.163.com", 465, timeout=10)
+
+            server.ehlo()  # 向邮箱发送SMTP 'ehlo' 命令
+            server.starttls()
+
+            # 登录账户
+            server.login(self.sys_sender, self.sys_pwd)
+            # 发送邮件 （多个收件人容易出错， 核心问题在于server.sendmail 中的 多个收件人必须是list["邮箱A","邮箱B","邮箱C"] ）
+            server.sendmail(self.sys_sender, self.receiver.split(','), msg.as_string())
+
+            # 退出账户
+            server.quit()
+            print('邮件发送成功')
+            return True
+        except Exception as e:
+            print('邮件发送失败 : ', e)
+            return False
+
+if __name__ == '__main__':
+    # 收件地址
+    receiver = "xuefeng@163.com,120158568@qq.com"
+    # 标题
+    title = "33测试告警"
+    # 开始时间
+    start_time = time.strftime('%Y-%m-%d %H:%M:%S')
+    ip = "xx.xx.xx.xx"
+    # 发送内容
+    content = "{} ip: {} 掉线".format(start_time, ip)
+
+    # 365邮箱
+    ret = EmailHelper(title, content, 'xx@aa.com', 'xxx', receiver).send_office365()
+    # 网易邮箱
+    # ret = EmailHelper(title, content, 'xx@aa.com', 'xxx', receiver).send_163()
+    # QQ邮箱
+    # ret = EmailHelper(title, content, '120158568@qq.com', 'xxxxxxxxxxxx', receiver).send_qq()
 """
 brand_controller_content = """
 add_brand:
@@ -1552,8 +1679,31 @@ urllib3==1.26.12
 win32-setctime==1.1.0
 
 """
-Markdown_content = """
-# 待补充
+README_content = """
+安装最新版本
+
+> pip install aamt
+
+指定版本安装
+
+> pip install tep==0.1.0
+
+升级aamt
+
+> pip install -U aamt
+
+创建项目脚手架 
+
+> aamt startproject demo
+
+创建项目脚手架(自动创建虚拟环境)
+
+> aamt startproject demo -venv
+
+外网速度慢，pandas可能安装失败，推荐用国内镜像
+
+> pip --default-timeout=6000 install -i https://pypi.tuna.tsinghua.edu.cn/simple aamt
+
 """
 
 fastapi_mock_content = """#!/usr/bin/python
@@ -1629,7 +1779,7 @@ filename = f'test_{time.strftime("%Y%m%d_%H%M%S", time.localtime())}.py'
 case_file = os.path.join(mitm_dir, filename)
 # 生成用例文件
 template = \"\"\"import allure
-from tep.client import request
+from aamt.client import request
 
 
 @allure.title("")
@@ -1714,25 +1864,5 @@ mitmdump -s mitm.py --mode reverse:http://127.0.0.1:5000 --listen-host 127.0.0.1
 """
 
 structure_content = """项目结构说明：
-files：文件
-fixtures：pytest fixture
-reports：allure测试报告
-samples：示例代码
-  db：数据库
-    test_mysql.py：连接MySQL
-  http：requests请求
-    test_request.py：requests常见用法
-    test_request_monkey_patch.py：tep request猴子补丁测试
-  login_pay：登陆到下单流程
-    mvc：mvc接口用例分离示例（不推荐）
-    tep：极速写法（强烈推荐）
-tests：测试用例
-utils：工具
-  fastapi_mock.py：自带fastapi项目
-  http_client.py：tep request猴子补丁
-  mitm.py：mitmproxy抓包自动生成用例
-.gitignore：Git忽略文件规则
-conf.yaml：项目配置
-conftest.py：pytest conftest
-pytest.ini：pytest配置
+待完善
 """

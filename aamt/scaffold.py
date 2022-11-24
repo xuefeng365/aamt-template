@@ -88,6 +88,7 @@ def create_scaffold(project_name):
     create_file(os.path.join(project_name, "common", "config.py"),file_content=config_content)
     create_file(os.path.join(project_name, "common", "logger.py"),file_content=logger_content)
     create_file(os.path.join(project_name, "common", "mysqlhelper.py"),file_content=mysqlhelper_content)
+    create_file(os.path.join(project_name, "common", "emailhelper.py"),file_content=emailhelper_content)
 
     create_folder(os.path.join(project_name, "data"))
     create_file(os.path.join(project_name, "data", "brand_controller.yaml"),file_content=brand_controller_content)
@@ -112,7 +113,7 @@ def create_scaffold(project_name):
     create_file(os.path.join(project_name, "main.py"), file_content=main_content)
     create_file(os.path.join(project_name, "pytest.ini"), file_content=pytest_content)
     create_file(os.path.join(project_name, "requirements.txt"), file_content=requirements_content)
-    create_file(os.path.join(project_name, "Markdown.txt"), file_content=Markdown_content)
+    create_file(os.path.join(project_name, "README.md"), file_content=README_content)
     create_file(os.path.join(project_name, "项目结构说明.txt"), structure_content)
 
 

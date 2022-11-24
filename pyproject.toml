@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aamt"
-version = "0.0.7"
+version = "0.1.0"
 description = "基于pytest的接口自动化测试工具模板"
 authors = ["xuefeng365 <120158568@qq.com>"]
 readme = "README.md"
