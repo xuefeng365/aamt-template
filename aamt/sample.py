@@ -15,7 +15,6 @@ __pycache__/
 report/
 debug/"""
 
-
 client_content = """
 from mimetypes import MimeTypes
 
