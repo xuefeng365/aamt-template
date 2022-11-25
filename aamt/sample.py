@@ -16,22 +16,20 @@ report/
 debug/"""
 
 client_content = """
+import json
+import time
 from mimetypes import MimeTypes
+from urllib.parse import urlencode
 
+import allure
 import jmespath
 import requests
-import json
-import allure
-from urllib.parse import urlencode
-import time
-
 from requests import Response
-
-from common.logger import Logger
-from common.config import *
 from requests_toolbelt.multipart.encoder import MultipartEncoder
-from until.fake import TepVars
 
+from aamt.config import *
+from aamt.fixture import AamtVars
+from aamt.logger import Logger
 
 
 class Body_type():
@@ -51,7 +49,7 @@ class HttpClient(Body_type):
         self.session = requests.Session()
 
         # 变量池实例
-        self.aamt_vars = TepVars()
+        self.aamt_vars = AamtVars()
         # 日志实例
         self.logging = Logger
 
@@ -218,23 +216,19 @@ public_api_content = """
 # @Site:
 # @Time: 5月 05, 2022
 import sys
-from time import sleep
 
 import allure
 import jmespath
-from jsonpath import jsonpath
 
-from api.client import HttpClient
-from common.config import *
-from common.logger import Logger
+from aamt.client import HttpClient
+from aamt.config import *
+from aamt.logger import Logger
 from common.mysqlhelper import MysqlHelper
-from until.fake import fake
 
 sys.path.append("..")
 
 
 class Public(HttpClient):
-    # api = TepVars()
 
     def __init__(self, token):
         '''
@@ -244,7 +238,7 @@ class Public(HttpClient):
         # 从配置文件里 读取最新的token文件
         xin_token = Operate_config().read_token(section='Token', key=token)
         self.token = xin_token
-        print(f'读取到的最新token:{xin_token}')
+        Logger.warning(f'读取到的最新token:{xin_token}')
 
     @allure.step('新增全新公司：{name}')
     def add_company(self, name='xuefeng', cid=''):
@@ -266,6 +260,7 @@ class Public(HttpClient):
 
             url = self.get_full_url(url, h=self.host)
             ret = self.send(url=url, method=method, body=body, body_type=self.form_text, x_token=self.token)
+
             if jmespath.search('code', ret) == 200:
                 print('新增成功')
             elif jmespath.search('code', ret) == 500:
@@ -301,16 +296,17 @@ class Public(HttpClient):
             assert '存在' in ret['message'], f'异常, 新增公司模板 {name} 功能异常，请检查'
         else:
             assert False, f'异常，公司模板分配权限异常，接口响应信息；{ret}'
+
+
 """
 brand_controller_api_content = """
+
 # -*- coding: UTF-8 -*-
 import sys
 
 import jmespath
-
-# from common.config import *
 from api.brand.route import *
-from api.client import *
+from aamt.client import *
 
 sys.path.append("..")
 
@@ -382,7 +378,7 @@ class Brand_ControllerApi(HttpClient):
 
         if id:
 
-            # print(f'所有品牌列表：{list} \n取第一个品牌id:{id}')
+            # print(f'所有品牌列表：{list} 取第一个品牌id:{id}')
             url = brand_controller['del_brand']['url']
             method = brand_controller['del_brand']['method']
             body = {}
@@ -393,77 +389,76 @@ class Brand_ControllerApi(HttpClient):
         else:
 
             print(f'品牌：{brand_name} 不存在')
+
 """
 brand_route_content = """
-from common.config import *
+from aamt.config import *
 
 "后台品牌接口路径（前台）"
 brand_controller = Read_yaml().get_test_yaml(filepath="/brand/brand_controller.yaml")
 
 """
-conftest_content = """
-# -*- coding: UTF-8 -*-
-import sys
+fixture_admin_content = """
+# -*- coding: utf-8 -*-
+
+# @Software: PyCharm
+# @File: fixture_admin.py
+# @Author: xuefeng365
+# @E-mail: 120158568@qq.com,
+# @Site: www.51automate.cn
+# @Time: 11月 25, 2022
+
 
 import pytest
+from aamt.config import *
 
-from common.public_api import Public
-
-sys.path.append("..")
-
-from common.logintoken import Login_after
-
-# 导入token Environ env
-from common.config import *
-from common.public_api import get_authority_id
-
-
+# 管理员维护
 @pytest.fixture(scope='session')
 def env_vars_data():
-    result = Read_yaml().get_env_vars_yaml()
-    return result
+    return Read_yaml().get_env_vars_yaml()
+
+"""
+fixture_xf_content = """
+# -*- coding: utf-8 -*-
+
+# @Software: PyCharm
+# @File: fixture_xf.py
+# @Author: xuefeng365
+# @E-mail: 120158568@qq.com,
+# @Site: www.51automate.cn
+# @Time: 11月 25, 2022
 
 
-# --------------- 超级管理员管理后台 登录及其数据初始化 开始 -----------
+import pytest
+from aamt.logger import Logger
+
+from api.logintoken import Login_after
+from api.public_api import Public
+
+
 @pytest.fixture(scope="session")
-# def systerm_admin_login(user_info=env_vars_data['systerm']):
 def systerm_admin_login(env_vars_data):
-    print('超管登录')
     Login_after(env_vars_data['systerm'], 'systerm_admin_token')
 
 
-# @pytest.fixture(scope="session", autouse=True)
-@pytest.fixture(scope="session")
+# @pytest.fixture(scope="session", autouse=True)  # 自动运行
+@pytest.fixture(scope="session")  # 调用才运行
 def init_admin(systerm_admin_login):
-    # -------- 调用公共方法 新建基础数据（不需要返回值）  ---------
-    print('调用公共方法 新建基础数据（不需要返回值）')
+    Logger.info('调用公共方法 准备基础数据,返回一个实例')
     pub_d = Public(token='systerm_admin_token')
-    print('-+-+-+', env_vars_data['systerm'])
-
-
-    # -------- 新增公司、新增模板（分配全部权限）、新增角色（分配权限） 、新增用户（分配角色） ----------
-
     yield pub_d
-
-
-# --------------- 超级管理员管理后台 登录及其数据初始化 结束 -----------
 
 
 # --------------- xuefeng 医生1 登录及其数据初始化 开始 -----------
 @pytest.fixture(scope="session")
 def login_doctor1(env_vars_data):
-    print('xuefeng_doctor1 登录')
     Login_after(env_vars_data['xuefeng_doctor1'], 'xuefeng_doctor1_token')
 
 
-@pytest.fixture(scope="session", autouse=True)
-# @pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)  # 自动运行
+# @pytest.fixture(scope="session")  # 调用才运行
 def init_doctor1(login_doctor1):
-    # -------- 调用公共方法 新建基础数据（不需要返回值）  ---------
-    print('调用公共方法 新建基础数据（不需要返回值）')
     pub_d = Public(token='xuefeng_doctor1_token')
-    # 医生基础数据
-
     yield pub_d
 
 
@@ -473,17 +468,13 @@ def init_doctor1(login_doctor1):
 # --------------- xuefeng 医生2 登录及其数据初始化 开始 -----------
 @pytest.fixture(scope="session")
 def login_doctor2(env_vars_data):
-    print('xuefeng_doctor2 登录')
     Login_after(env_vars_data['xuefeng_doctor2'], 'xuefeng_doctor2_token')
 
 
-# @pytest.fixture(scope="session", autouse=True)
-@pytest.fixture(scope="session")
+# @pytest.fixture(scope="session", autouse=True)  # 自动运行
+@pytest.fixture(scope="session")  # 调用才运行
 def init_doctor2(login_doctor2):
-    # -------- 调用公共方法 新建基础数据（不需要返回值）  ---------
-    print('调用公共方法 新建基础数据（不需要返回值）')
     pub_d = Public(token='xuefeng_doctor2_token')
-
     yield pub_d
 
 
@@ -497,17 +488,10 @@ def login_nurse1(env_vars_data):
     Login_after(env_vars_data['xuefeng2_nurse1'], 'xuefeng2_nurse1_token')
 
 
-# 返回值-护士身份- 增加基础数据 返回公共方法实例
 # @pytest.fixture(scope="session", autouse=True)
 @pytest.fixture(scope="session")
 def init_nurse1(login_nurse1):
-    # -------- 调用公共方法 新建基础数据（不需要返回值）  ---------
-    print('调用公共方法 新建基础数据（不需要返回值）')
     pub_n = Public(token='xuefeng2_nurse1_token')
-
-    # # 护士基础数据
-
-
     yield pub_n
 
 
@@ -521,37 +505,32 @@ def login_nurse2(env_vars_data):
     Login_after(env_vars_data['xuefeng2_nurse2'], 'xuefeng2_nurse2_token')
 
 
-# 返回值-护士身份- 增加基础数据 返回公共方法实例
 # @pytest.fixture(scope="session", autouse=True)
 @pytest.fixture(scope="session")
 def init_nurse2(login_nurse2):
-    # -------- 调用公共方法 新建基础数据（不需要返回值）  ---------
-    print('调用公共方法 新建基础数据（不需要返回值）')
     pub_n = Public(token='xuefeng2_nurse2_token')
-
     yield pub_n
-
 
 # --------------- xuefeng2 护士2 登录及其数据初始化 结束 -----------
 
+"""
+conftest_content = """
+# -*- coding: utf-8 -*-
 
-# --------------- guangzhou 医生1 登录及其数据初始化 开始 -----------
+# @Software: PyCharm
+# @File: conftest.py
+# @Author: xuefeng365
+# @E-mail: 120158568@qq.com,
+# @Site: www.51automate.cn
+# @Time: 11月 25, 2022
 
-@pytest.fixture(scope="session")
-def login_doctor1_gz(env_vars_data):
-    Login_after(env_vars_data['gz_doctor1'], 'gz_doctor1_token')
+# import sys
+# sys.path.append("..")
 
+from aamt.plugin import aamt_plugins
 
-# @pytest.fixture(scope="session", autouse=True)
-@pytest.fixture(scope="session")
-def init_d(login_doctor1_gz):
-    # -------- 调用公共方法 新建基础数据（不需要返回值）  ---------
-    print('调用公共方法 新建基础数据（不需要返回值）')
-    pub_d = Public(token='gz_doctor1_token')
-
-    yield pub_d
-
-# --------------- guangzhou 医生1 登录及其数据初始化 结束 -----------
+# 加载aamt插件
+pytest_plugins = aamt_plugins()
 
 
 """
@@ -661,6 +640,14 @@ def assert_api(actual_data,expect_data):
 """
 config_content = """
 # -*- coding: UTF-8 -*-
+# @Software: PyCharm
+# @File: config.py
+# @Author: xuefeng365
+# @E-mail: 120158568@qq.com,
+# @Site:
+# @Time: 11月 23, 2022
+
+
 import configparser
 import os
 
@@ -669,7 +656,8 @@ import yaml
 
 class Config():
     # 全局项目根目录
-    project_root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    project_root_dir = ''
+    # project_root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 
 class Operate_config(Config):
@@ -708,7 +696,6 @@ class Read_yaml(Operate_config):
     def get_env_vars_yaml(self):
         env_active = self.read_environ_active()
         env_filename = f'env_vars_{env_active}.yaml'
-
         with open(
                 os.path.join(self.project_root_dir, "resources", "env_vars", env_filename), encoding="utf-8") as f:
             return yaml.load(f.read(), Loader=yaml.FullLoader)
@@ -733,15 +720,24 @@ def get_file_path(file_name, middle='file'):
     return filePath
 
 
-# 获取配置文件中的key值 (token值)
-systerm_admin_token = Operate_config().read_token(key='systerm_admin_token')
-xuefeng2_doctor1_token = Operate_config().read_token(key='xuefeng_doctor1_token')
-xuefeng2_doctor2_token = Operate_config().read_token(key='xuefeng_doctor2_token')
-xuefeng_nurse1_token = Operate_config().read_token(key='xuefeng2_nurse1_token')
-xuefeng_nurse2_token = Operate_config().read_token(key='xuefeng2_nurse2_token')
-
-gz_doctor1_token = Operate_config().read_token(key='gz_doctor1_token')
-gz_nurse1_token = Operate_config().read_token(key='gz_nurse1_token')
+def fixture_paths(root_path=Config.project_root_dir):
+    '''
+    fixture路径，1、项目下的fixtures；2、aamt下的fixture；
+    :return:
+    '''
+    _fixtures_dir = os.path.join(root_path, "fixtures")
+    paths = []
+    # 项目下的fixtures
+    for root, _, files in os.walk(_fixtures_dir):
+        for file in files:
+            if file.startswith("fixture_") and file.endswith(".py"):
+                full_path = os.path.join(root, file)
+                import_path = full_path.replace(_fixtures_dir, "").replace("\\\\", ".")
+                import_path = import_path.replace("/", ".").replace(".py", "")
+                paths.append("fixtures" + import_path)
+    # aamt下的fixture
+    paths.append("aamt.fixture")
+    return paths
 
 
 """
@@ -753,7 +749,7 @@ from functools import wraps
 
 import colorlog
 
-from common.config import Config
+from aamt.config import *
 
 # logging模块中包含的类
 # 用来自定义日志对象的规则（比如：设置日志输出格式、等级等）
@@ -862,54 +858,22 @@ if __name__ == '__main__':
 logintoken_content = """
 # -*- coding: utf-8 -*-
 
+
 import hashlib
 
 import jmespath
-
-from until.client import HttpClient
-from common.config import *
-
-
-# ***********  前端登录  ***********
-
-class Login(HttpClient):
-    ''' 初始化登录-- 定义token（coolie 或者 session）字段：目的为了鉴权，并将其写入配置文件'''
-
-    def __init__(self, user_info, token):
-        super().__init__()  # 继承上个类的ini
-        self.username = user_info['userEmail']
-        self.password = user_info['userPassword']
-        result = self.login_front(username=self.username, password=self.password)
-        assert result['code'] == 200, "前台登录失败"
-        self.token = result['result']['token']
-        print(f'======自动运行：先获取 前台{token}========: {self.token}')
-
-        # 把token值写入配置文件中
-        Operate_config().write(section="Token", key=token, value=self.token)
-
-    def login_front(self, username, password):
-        body = {
-            "userEmail": username,
-            "userPassword": password
-        }
-        url = '/internet/user/login'
-        method = 'post'
-        url = self.get_full_url(url, h=self.env_vars_data['front_host'])
-        return self.send(url=url, method=method, body=body, body_type=self.json)
+from aamt.client import HttpClient
+from aamt.config import *
+from aamt.logger import Logger
 
 
-# **********************************
-
-
-# ***********  后台登录  ***********
-
+# ***********  后台登录开始  ***********
 class Login_after(HttpClient):
 
     def __init__(self, user_info, token):
         # 传入token（coolie 或者 session）字段：目的为了写入配置文件
         super().__init__()  # 继承上个类的ini
         self.username = user_info['account']
-
         # ----------- 密码进行MD5加密 ------------ #
         mima = str(user_info['password'])
         # md5加密对象
@@ -918,15 +882,12 @@ class Login_after(HttpClient):
         md5.update(mima.encode('utf-8'))
         # 转化为16进制字符串
         new_mima = md5.hexdigest()
-
         # ----------- MD5加密结束 ------------ #
-
         self.password = new_mima
-
         result = self.login_after(username=self.username, password=self.password)
         assert jmespath.search('code', result) == 200, f"系统管理登录失败,接口响应 \\n {result}\\n"
         self.token = result['result']['token']
-        print(f'======自动运行：先获取 后台token========: {self.token}')
+        Logger.info(f'账号：{self.username} 登录成功，新token：{self.token}')
         # 把token值写入配置文件中
         Operate_config().write(section="Token", key=token, value=self.token)
 
@@ -938,9 +899,14 @@ class Login_after(HttpClient):
         url = '/system/userInfo/login'
         method = 'get'
         url = self.get_full_url(url, etc=etc, h=self.env_vars_data['after_host'])
-        return self.send(url=url, method=method)
+        return self.send(method=method, url=url)
 
-# ***********************************
+# ***********  后台登录结束  ***********
+
+
+# ***********  前端登录开始  ***********
+# XXXXXXXX 支持扩展 XXXXXXXXX
+# ***********  前端登录结束  *************
 
 
 
@@ -1297,6 +1263,36 @@ if __name__ == '__main__':
     # QQ邮箱
     # ret = EmailHelper(title, content, '120158568@qq.com', 'xxxxxxxxxxxx', receiver).send_qq()
 """
+read_token_content = """
+# -*- coding: utf-8 -*-
+
+# @Software: PyCharm
+# @File: read_token.py
+# @Author: xuefeng365
+# @E-mail: 120158568@qq.com,
+# @Site: www.51automate.cn
+# @Time: 11月 25, 2022
+
+
+from aamt.config import Operate_config
+
+
+def read_token():
+    # 获取配置文件中的key值 (token值)
+    class Clazz:
+        Get = Operate_config()
+        systerm_admin_token = Get.read_token(key='systerm_admin_token')
+        xuefeng2_doctor1_token = Get.read_token(key='xuefeng_doctor1_token')
+        xuefeng2_doctor2_token = Get.read_token(key='xuefeng_doctor2_token')
+        xuefeng_nurse1_token = Get.read_token(key='xuefeng2_nurse1_token')
+        xuefeng_nurse2_token = Get.read_token(key='xuefeng2_nurse2_token')
+
+        gz_doctor1_token = Get.read_token(key='gz_doctor1_token')
+        gz_nurse1_token = Get.read_token(key='gz_nurse1_token')
+
+    return Clazz
+
+"""
 brand_controller_content = """
 add_brand:
   title: 新增品牌
@@ -1512,25 +1508,6 @@ class Faker_:
 
     def md5(self):
         return self.fake.md5()
-
-
-class TepVars:
-    # 全局变量池
-
-    def __init__(self):
-        self.vars_ = {'a': '初始值'}
-
-    def put(self, key, value):
-        self.vars_[key] = value
-        Logger.info(f'变量池 成功新增：{{{key}：{value}}}')
-
-    def get(self, key):
-        value = ""
-        try:
-            value = self.vars_[key]
-        except KeyError:
-            Logger.error(f'异常：获取 {key} 失败, 当前变量池：{self.vars_}')
-        return value
 
 
 if __name__ == "__main__":

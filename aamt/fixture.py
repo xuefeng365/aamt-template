@@ -7,6 +7,7 @@
 # @Time: 11月 23, 2022
 
 import pytest
+from aamt.logger import Logger
 from faker import Faker
 
 from aamt.config import *
@@ -72,5 +73,24 @@ def env_vars():
     return Read_yaml().get_env_vars_yaml()
 
 
+
+
+class AamtVars:
+    # 全局变量池
+
+    def __init__(self):
+        self.vars_ = {'a': '初始值'}
+
+    def put(self, key, value):
+        self.vars_[key] = value
+        # Logger.info(f'变量池 成功新增：{{{key}：{value}}}')
+
+    def get(self, key):
+        value = ""
+        try:
+            value = self.vars_[key]
+        except KeyError:
+            Logger.error(f'异常：获取 {key} 失败, 当前变量池：{self.vars_}')
+        return value
 
 

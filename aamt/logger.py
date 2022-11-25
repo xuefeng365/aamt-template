@@ -8,13 +8,12 @@
 
 
 import logging
-import os
 import time
 from functools import wraps
 
 import colorlog
 
-from aamt.config import Config
+from aamt.config import *
 
 # logging模块中包含的类
 # 用来自定义日志对象的规则（比如：设置日志输出格式、等级等）

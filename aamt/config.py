@@ -12,7 +12,6 @@ import os
 
 import yaml
 
-
 class Config():
     # 全局项目根目录
     project_root_dir = ''
@@ -80,10 +79,10 @@ def get_file_path(file_name, middle='file'):
 
 
 def fixture_paths(root_path=Config.project_root_dir):
-    """
+    '''
     fixture路径，1、项目下的fixtures；2、aamt下的fixture；
     :return:
-    """
+    '''
     _fixtures_dir = os.path.join(root_path, "fixtures")
     paths = []
     # 项目下的fixtures
@@ -98,6 +97,3 @@ def fixture_paths(root_path=Config.project_root_dir):
     paths.append("aamt.fixture")
     return paths
 
-# 获取配置文件中的key值 (token值)
-# systerm_admin_token = Operate_config().read_token(key='systerm_admin_token')
-# print(Config.project_root_dir)

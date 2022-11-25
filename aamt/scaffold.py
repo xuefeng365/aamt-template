@@ -11,8 +11,8 @@ import os
 import platform
 import sys
 
-from aamt.logger import Logger
 from aamt.sample import *
+from aamt.logger import Logger
 
 
 class ExtraArgument:
@@ -75,6 +75,13 @@ def create_scaffold(project_name):
     create_file(os.path.join(project_name, "api", "brand", "brand_controller_api.py"), file_content=brand_controller_api_content)
     create_file(os.path.join(project_name, "api", "brand", "route.py"), file_content=brand_route_content)
 
+    create_folder(os.path.join(project_name, "fixtures"))
+    create_file(os.path.join(project_name, "fixtures", "__init__.py"))
+    create_file(os.path.join(project_name, "fixtures", "fixture_admin.py"), file_content=fixture_admin_content)
+    create_folder(os.path.join(project_name , "fixtures", "xf"))
+    create_file(os.path.join(project_name, "fixtures", "xf", "__init__.py"))
+    create_file(os.path.join(project_name, "fixtures", "xf", "fixture_xf.py"), file_content=fixture_xf_content)
+
     create_folder(os.path.join(project_name, "case"))
     create_file(os.path.join(project_name, "case", "__init__.py"))
     create_file(os.path.join(project_name, "case", "conftest.py"),file_content=conftest_content)
@@ -85,10 +92,11 @@ def create_scaffold(project_name):
     create_file(os.path.join(project_name, "common", "__init__.py"))
     create_file(os.path.join(project_name, "common", "assert_api.py"),file_content=assert_api_content)
     create_file(os.path.join(project_name, "common", "clear_results.py"),file_content=clear_results_content)
-    create_file(os.path.join(project_name, "common", "config.py"),file_content=config_content)
+    # create_file(os.path.join(project_name, "common", "config.py"),file_content=config_content)
     create_file(os.path.join(project_name, "common", "logger.py"),file_content=logger_content)
     create_file(os.path.join(project_name, "common", "mysqlhelper.py"),file_content=mysqlhelper_content)
     create_file(os.path.join(project_name, "common", "emailhelper.py"),file_content=emailhelper_content)
+    create_file(os.path.join(project_name, "common", "read_token.py"),file_content=read_token_content)
 
     create_folder(os.path.join(project_name, "data"))
     create_file(os.path.join(project_name, "data", "brand_controller.yaml"),file_content=brand_controller_content)
@@ -98,7 +106,7 @@ def create_scaffold(project_name):
     create_folder(os.path.join(project_name, "report"))
 
     create_folder(os.path.join(project_name, "resources"))
-    create_file(os.path.join(project_name, "common", "aamt.ini"),file_content=aamt_content)
+    create_file(os.path.join(project_name, "resources", "aamt.ini"),file_content=aamt_content)
     create_folder(os.path.join(project_name, "resources", "env_vars"))
     create_file(os.path.join(project_name, "resources", "env_vars", "env_vars_test.yaml"),file_content=env_vars_test_yaml_content)
     create_file(os.path.join(project_name, "resources", "env_vars", "env_vars_uat.yaml"),file_content=env_vars_uat_yaml_content)
@@ -142,3 +150,6 @@ def main_scaffold(args):
     # 项目脚手架处理程序入口
     ExtraArgument.create_venv = args.create_venv
     sys.exit(create_scaffold(args.project_name))
+
+
+
