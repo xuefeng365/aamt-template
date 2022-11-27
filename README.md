@@ -11,7 +11,7 @@ python 版本
 
 指定版本安装
 
-> pip install tep==0.1.0
+> pip install aamt==0.1.0
 
 升级aamt
 
