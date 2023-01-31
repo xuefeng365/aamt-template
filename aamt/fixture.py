@@ -7,90 +7,39 @@
 # @Time: 11月 23, 2022
 
 import pytest
-from aamt.logger import Logger
-from faker import Faker
+import json
+import os
 
-from aamt.config import *
+from filelock import FileLock
+from loguru import logger
 
-
-class Project:
-    dir = ""
-
-
-def _project_dir(session):
-    # 从缓存中获取项目根目录
-    project_dir = session.config.cache.get("project_dir", None)
-    if not project_dir:
-        # 第一次运行没有.pytest_cache
-        cwd = os.getcwd()
-        tests = cwd.find("tests")
-        samples = cwd.find("samples")
-        if tests > 0:
-            project_dir = cwd[:cwd.find("tests")]
-        elif samples > 0:
-            project_dir = cwd[:cwd.find("samples")]
-        else:
-            project_dir = cwd
-    return project_dir
-
-
-def pytest_sessionstart(session):
-    Project.dir = _project_dir(session)
-
-
-@pytest.fixture(scope="session")
-def faker_ch():
-    """中文造数据"""
-    return Faker(locale="zh_CN")
-
-
-@pytest.fixture(scope="session")
-def faker_en():
-    """英文造数据"""
-    return Faker()
-
-
-@pytest.fixture(scope="session")
-def pd():
-    """pandas库"""
-    try:
-        import pandas
-        return pandas
-    except ModuleNotFoundError:
-        pass
-
-
-@pytest.fixture(scope="session")
-def file_dir():
-    """file目录的路径"""
-    return os.path.join(Project.dir, "file")
 
 
 
 @pytest.fixture(scope="session")
-def env_vars():
-    """读取激活环境下的yaml文件里的配置信息（账号、密码、数据库等）"""
-    return Read_yaml().get_env_vars_yaml()
+def aamt_context_manager(tmp_path_factory, worker_id):
+    """
+    aamt上下文管理器，在xdist分布式执行时，多个session也只执行一次
+    参考：https://pytest-xdist.readthedocs.io/en/latest/how-to.html#making-session-scoped-fixtures-execute-only-once
+    命令不带-n auto也能正常执行，不受影响
+    """
 
+    def inner(produce_expensive_data, *args, **kwargs):
+        if worker_id == "master":
+            # not executing in with multiple workers, just produce the data and let
+            # pytest's fixture caching do its job
+            return produce_expensive_data(*args, **kwargs)
 
+        # get the temp directory shared by all workers
+        root_tmp_dir = tmp_path_factory.getbasetemp().parent
 
+        fn = root_tmp_dir / "data.json"
+        with FileLock(str(fn) + ".lock"):
+            if fn.is_file():
+                data = json.loads(fn.read_text())
+            else:
+                data = produce_expensive_data(*args, **kwargs)
+                fn.write_text(json.dumps(data))
+        return data
 
-class AamtVars:
-    # 全局变量池
-
-    def __init__(self):
-        self.vars_ = {'a': '初始值'}
-
-    def put(self, key, value):
-        self.vars_[key] = value
-        # Logger.info(f'变量池 成功新增：{{{key}：{value}}}')
-
-    def get(self, key):
-        value = ""
-        try:
-            value = self.vars_[key]
-        except KeyError:
-            Logger.error(f'异常：获取 {key} 失败, 当前变量池：{self.vars_}')
-        return value
-
-
+    return inner

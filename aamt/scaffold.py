@@ -12,7 +12,7 @@ import platform
 import sys
 
 from aamt.sample import *
-from aamt.logger import Logger
+from loguru import logger
 
 
 class ExtraArgument:
@@ -29,7 +29,7 @@ def init_parser_scaffold(subparsers):
         "-venv",
         dest="create_venv",
         action="store_true",
-        help="Create virtual environment in the project, and install tep.",
+        help="Create virtual environment in the project, and install aamt.",
     )
     return sub_parser_scaffold
 
@@ -37,17 +37,17 @@ def init_parser_scaffold(subparsers):
 def create_scaffold(project_name):
     """ 创建项目脚手架"""
     if os.path.isdir(project_name):
-        Logger.warning(
+        logger.warning(
             f"Project folder {project_name} exists, please specify a new project name."
         )
         return 1
     elif os.path.isfile(project_name):
-        Logger.warning(
+        logger.warning(
             f"Project name {project_name} conflicts with existed file, please specify a new one."
         )
         return 1
 
-    Logger.info(f"Create new project: {project_name}")
+    logger.info(f"Create new project: {project_name}")
     # os.getcwd() 获取当前目录
     print(f"Project root dir: {os.path.join(os.getcwd(), project_name)}\n")
 
@@ -81,22 +81,23 @@ def create_scaffold(project_name):
     create_folder(os.path.join(project_name , "fixtures", "xf"))
     create_file(os.path.join(project_name, "fixtures", "xf", "__init__.py"))
     create_file(os.path.join(project_name, "fixtures", "xf", "fixture_xf.py"), file_content=fixture_xf_content)
+    create_folder(os.path.join(project_name , "fixtures", "zhangsan"))
+    create_file(os.path.join(project_name, "fixtures", "zhangsan", "__init__.py"))
+    create_file(os.path.join(project_name, "fixtures", "zhangsan", "fixture_zhangsan.py"), file_content=fixture_zhangsan_content)
 
     create_folder(os.path.join(project_name, "case"))
     create_file(os.path.join(project_name, "case", "__init__.py"))
-    create_file(os.path.join(project_name, "case", "conftest.py"),file_content=conftest_content)
+    create_file(os.path.join(project_name, "case", "conftest.py"),file_content=conftest_content1)
     create_folder(os.path.join(project_name, "case", "test_brand"))
     create_file(os.path.join(project_name, "case", "test_brand", "test_brand.py"),file_content=test_brand_content)
+
 
     create_folder(os.path.join(project_name, "common"))
     create_file(os.path.join(project_name, "common", "__init__.py"))
     create_file(os.path.join(project_name, "common", "assert_api.py"),file_content=assert_api_content)
-    create_file(os.path.join(project_name, "common", "clear_results.py"),file_content=clear_results_content)
-    # create_file(os.path.join(project_name, "common", "config.py"),file_content=config_content)
-    create_file(os.path.join(project_name, "common", "logger.py"),file_content=logger_content)
     create_file(os.path.join(project_name, "common", "mysqlhelper.py"),file_content=mysqlhelper_content)
     create_file(os.path.join(project_name, "common", "emailhelper.py"),file_content=emailhelper_content)
-    create_file(os.path.join(project_name, "common", "read_token.py"),file_content=read_token_content)
+    create_file(os.path.join(project_name, "common", "project.py"),file_content=project_content)
 
     create_folder(os.path.join(project_name, "data"))
     create_file(os.path.join(project_name, "data", "brand_controller.yaml"),file_content=brand_controller_content)
@@ -106,7 +107,7 @@ def create_scaffold(project_name):
     create_folder(os.path.join(project_name, "report"))
 
     create_folder(os.path.join(project_name, "resources"))
-    create_file(os.path.join(project_name, "resources", "aamt.ini"),file_content=aamt_content)
+    create_file(os.path.join(project_name, "resources", "aamt.ini"),file_content=aamt_ini_content)
     create_folder(os.path.join(project_name, "resources", "env_vars"))
     create_file(os.path.join(project_name, "resources", "env_vars", "env_vars_test.yaml"),file_content=env_vars_test_yaml_content)
     create_file(os.path.join(project_name, "resources", "env_vars", "env_vars_uat.yaml"),file_content=env_vars_uat_yaml_content)
@@ -117,12 +118,15 @@ def create_scaffold(project_name):
     create_file(os.path.join(project_name, "until", "fake.py"), file_content=fake_content)
     create_file(os.path.join(project_name, "until", "fastapi_mock.py"), file_content=fastapi_mock_content)
     create_file(os.path.join(project_name, "until", "mitm.py"), file_content=mitm_content)
+    create_file(os.path.join(project_name, "until", "dao.py"), file_content=dao_conftent)
 
     create_file(os.path.join(project_name, "main.py"), file_content=main_content)
     create_file(os.path.join(project_name, "pytest.ini"), file_content=pytest_content)
     create_file(os.path.join(project_name, "requirements.txt"), file_content=requirements_content)
     create_file(os.path.join(project_name, "README.md"), file_content=README_content)
+    create_file(os.path.join(project_name, "conftest.py"), file_content=conftest_content)
     create_file(os.path.join(project_name, "项目结构说明.txt"), structure_content)
+    create_file(os.path.join(project_name, "run.sh"), run_shell_content)
 
 
 
