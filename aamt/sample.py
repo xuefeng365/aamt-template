@@ -1246,9 +1246,6 @@ README_content = """
 ## AAMT 项目模版
 > 用于生成 基于pytest的接口自动化脚手架
 
-教程参考： http://www.51automate.cn/2023/01/30/aamt%E4%BB%8B%E7%BB%8D/
-
-
 """
 structure_content = """项目结构说明：
 api ：各模块接口文件
