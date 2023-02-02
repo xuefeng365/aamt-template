@@ -11,7 +11,7 @@ python 版本
 
 指定版本安装
 
-> pip install aamt==0.2.0
+> pip install aamt==0.2.2
 
 升级aamt
 

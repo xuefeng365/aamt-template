@@ -20,8 +20,10 @@ from allure_pytest.plugin import cleanup_factory
 
 from aamt.config import Config, fixture_paths
 
-# allure源文件临时目录，那一堆json文件，生成HTML报告会删除
-allure_source_path = ".allure.source.temp"
+
+allure_source_path = './report/allure-results'
+# allure_source_path = '.allure.source.temp'
+
 
 def _aamt_reports(config):
     """
@@ -39,9 +41,8 @@ def _is_master(config):
     return not hasattr(config, 'workerinput')
 
 
-
 class Plugin:
-    reports_path = os.path.join(Config.project_root_dir, "reports")
+    # reports_path = os.path.join(Config.project_root_dir, "reports")
 
     @staticmethod
     def pytest_addoption(parser):
@@ -62,6 +63,7 @@ class Plugin:
         if _aamt_reports(config):
             if os.path.exists(allure_source_path):
                 shutil.rmtree(allure_source_path)
+            
             test_listener = AllureListener(config)
             config.pluginmanager.register(test_listener)
             allure_commons.plugin_manager.register(test_listener)
@@ -69,6 +71,7 @@ class Plugin:
 
             clean = config.option.clean_alluredir
             file_logger = AllureFileLogger(allure_source_path, clean)  # allure_source
+            
             allure_commons.plugin_manager.register(file_logger)
             config.add_cleanup(cleanup_factory(file_logger))
 
@@ -77,7 +80,7 @@ class Plugin:
         """
         测试运行结束后生成allure报告
         """
-        reports_path = os.path.join(Config.project_root_dir, "report")
+        reports_path = os.path.join(Config.project_root_dir, "report","allure-report")
         if _aamt_reports(session.config):
             if _is_master(session.config):  # 只在master节点才生成报告
                 # 最近一份报告的历史数据，填充allure趋势图
@@ -93,11 +96,12 @@ class Plugin:
                         shutil.rmtree(reports_path)
 
                 # html文件 存放路径
-                html_report_name = reports_path
+                html_report_name = os.path.join(Config.project_root_dir, "report", "allure-report")
+                allure_results_path = os.path.join(Config.project_root_dir, allure_source_path)
 
                 # allure_source_path ： allure源文件临时目录，那一堆json文件，生成HTML报告会删除
-                os.system(f"allure generate {allure_source_path} -o {html_report_name}  --clean")
-                shutil.rmtree(allure_source_path)
+                os.system(f"allure generate {allure_results_path} -o {html_report_name}  --clean")
+                # shutil.rmtree(allure_source_path)
 
     # @staticmethod
     # def pytest_sessionfinish(session):

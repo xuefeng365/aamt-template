@@ -1161,7 +1161,7 @@ markers =
 
 """
 requirements_content = """
-aamt==0.2.0
+aamt==0.2.2
 allure-pytest==2.12.0
 allure-python-commons==2.12.0
 attrs==22.1.0
@@ -1245,6 +1245,7 @@ sleep 1
 README_content = """
 ## AAMT 项目模版
 > 用于生成 基于pytest的接口自动化脚手架
+系列教程： http://www.51automate.cn/2023/01/30/aamt%E4%BB%8B%E7%BB%8D/
 
 """
 structure_content = """项目结构说明：
