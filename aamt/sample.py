@@ -1148,6 +1148,13 @@ if __name__ == '__main__':
 pytest_content = """
 
 [pytest]
+;# 选中指定标记smoke执行
+addopts = -v -s -m smoke
+
+;# 同时选中多个标记：只要标记'smoke or offer_serve'都执行
+;addopts = -v -s -m 'smoke or offer_serve'
+
+;testpaths = ./examples
 testpaths = ./case
 python_files = test_offer_doctor.py
 ;python_files = test_offer_nurse.py
@@ -1156,8 +1163,11 @@ python_files = test_offer_doctor.py
 ;python_functions = test_*
 
 markers =
-    smoke:0
-    test:1
+    smoke:冒烟测试用例
+    offer_serve: offer微服务下的接口
+    single_api: 单接口参数校验用例
+    p0: level p0 (优先级)
+    p1: level p1 (优先级)
 
 
 """
