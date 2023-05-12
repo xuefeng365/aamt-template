@@ -534,7 +534,7 @@ emailhelper_content = """
 # @File: emailhelper.py
 # @Author: xuefeng365
 # @E-mail: 120158568@qq.com,
-# @Site: 
+# @Site: www.51automate.cn
 # @Time: 11月 24, 2022
 
 import smtplib  # 加载smtplib模块
@@ -773,7 +773,7 @@ project_content = """
 # @File: project.py
 # @Author: xuefeng365
 # @E-mail: 120158568@qq.com,
-# @Site:
+# @Site: www.51automate.cn
 # @Time: 11月 23, 2022
 
 import os
@@ -851,6 +851,7 @@ class Read_yaml(Operate_token):
 def get_file_path(file_name, middle='file'):
     '''
     file_name: 文件名，比如 xiaoxin.png
+    middle： 文件夹，如果有文件夹嵌套，建议写在Config类里面
     '''
     filePath = os.path.join(settings.root_dir, middle,file_name)
     return filePath
@@ -1214,6 +1215,7 @@ conftest_content = """
 # @E-mail: 120158568@qq.com,
 # @Site: www.51automate.cn
 # @Time: 11月 25, 2022
+
 import pytest
 from aamt.plugin import aamt_plugins
 
